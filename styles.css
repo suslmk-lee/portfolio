@@ -168,6 +168,13 @@ body {
     flex-shrink: 0;
 }
 
+.cert-badge-img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
 .cert-details {
     display: flex;
     flex-direction: column;
@@ -759,6 +766,12 @@ body {
 
     .prev-project-desc {
         font-size: 9pt;
+    }
+
+    /* Certificate badge images for print */
+    .cert-badge-img {
+        width: 40px;
+        height: 40px;
     }
 
     /* Ensure colors are printed */

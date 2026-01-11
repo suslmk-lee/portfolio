@@ -860,6 +860,13 @@ body {
     margin-bottom: var(--spacing-md);
 }
 
+.cert-icon-img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    margin-bottom: var(--spacing-md);
+}
+
 .cert-name {
     font-size: var(--font-size-xl);
     font-weight: 700;
