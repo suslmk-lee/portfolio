@@ -915,6 +915,57 @@ body {
     color: var(--text-secondary);
 }
 
+/* Training Section */
+.training-section {
+    margin-top: var(--spacing-2xl);
+}
+
+.training-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.training-card {
+    background: var(--bg-secondary);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: flex-start;
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-base);
+}
+
+.training-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.training-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.training-title {
+    font-size: var(--font-size-base);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.training-org {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.training-date {
+    font-size: var(--font-size-sm);
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
 /* ==========================================
    CONTACT SECTION
    ========================================== */
