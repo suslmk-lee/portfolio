@@ -122,8 +122,11 @@ const fadeElements = document.querySelectorAll('.fade-in');
 fadeElements.forEach(el => observer.observe(el));
 
 // ==========================================
-// 3D SKILLS SPHERE
+// 3D SKILLS DEPTH EFFECT
 // ==========================================
+let skillAnimationFrame;
+let skillTags = [];
+
 function createSkillsSphere() {
     const sphere = document.getElementById('skillsSphere');
     if (!sphere) return;
@@ -135,7 +138,7 @@ function createSkillsSphere() {
         { name: 'Go', size: 'large' },
 
         // Important skills - medium
-        { name: 'OpenStack', size: 'medium' },
+        { name: 'Ansible', size: 'medium' },
         { name: 'AWS', size: 'medium' },
         { name: 'Python', size: 'medium' },
         { name: 'Java', size: 'medium' },
@@ -148,7 +151,7 @@ function createSkillsSphere() {
 
         // Other skills - small
         { name: 'Karmada', size: 'small' },
-        { name: 'Cluster API', size: 'small' },
+        { name: 'Istio', size: 'small' },
         { name: 'PostgreSQL', size: 'small' },
         { name: 'MariaDB', size: 'small' },
         { name: 'Linux', size: 'small' },
@@ -157,37 +160,123 @@ function createSkillsSphere() {
         { name: 'Shell Script', size: 'small' }
     ];
 
-    // Responsive radius
-    let radius = 250;
-    if (window.innerWidth < 768) {
-        radius = 175;
-    } else if (window.innerWidth < 968) {
-        radius = 200;
+    // Clear existing
+    sphere.innerHTML = '';
+    skillTags = [];
+    if (skillAnimationFrame) {
+        cancelAnimationFrame(skillAnimationFrame);
     }
 
-    const total = skills.length;
+    // Get container dimensions
+    const rect = sphere.getBoundingClientRect();
+    const containerWidth = rect.width || 1100;
+    const containerHeight = sphere.offsetHeight || 450;
 
-    // Clear existing tags
-    sphere.innerHTML = '';
+    // Ellipse parameters (flat oval) - centered in container
+    const centerX = containerWidth / 2;
+    const centerY = containerHeight / 2;
+    const radiusX = Math.min(containerWidth * 0.46, 500);  // horizontal radius
+    const radiusY = containerHeight * 0.42; // vertical radius (smaller = flatter)
 
-    skills.forEach((skill, i) => {
+    // Shuffle array for random order
+    const shuffledSkills = [...skills].sort(() => Math.random() - 0.5);
+
+    // Generate random positions within ellipse
+    const positions = [];
+    shuffledSkills.forEach((skill) => {
+        let x, y, attempts = 0;
+        const minDistance = 60; // minimum distance between tags
+
+        // Try to find non-overlapping position
+        do {
+            // Random point inside ellipse using polar coordinates
+            const angle = Math.random() * Math.PI * 2;
+            const r = Math.sqrt(Math.random()) * 0.85; // sqrt for uniform distribution
+            x = centerX + radiusX * r * Math.cos(angle);
+            y = centerY + radiusY * r * Math.sin(angle);
+            attempts++;
+        } while (
+            attempts < 50 &&
+            positions.some(p => Math.hypot(p.x - x, p.y - y) < minDistance)
+        );
+
+        positions.push({ x, y });
+
         const tag = document.createElement('div');
         tag.className = `skill-tag size-${skill.size}`;
         tag.textContent = skill.name;
 
-        // Fibonacci sphere distribution for better spacing
-        const phi = Math.acos(-1 + (2 * i) / total);
-        const theta = Math.sqrt(total * Math.PI) * phi;
+        // Position the tag (centered on the point)
+        tag.style.left = `${x}px`;
+        tag.style.top = `${y}px`;
+        tag.style.transform = 'translate(-50%, -50%)';
 
-        const x = radius * Math.cos(theta) * Math.sin(phi);
-        const y = radius * Math.sin(theta) * Math.sin(phi);
-        const z = radius * Math.cos(phi);
+        // Random parameters for each tag
+        const minScale = 0.55 + Math.random() * 0.3;  // 0.55 ~ 0.85
+        const maxScale = 1.0 + Math.random() * 0.35;  // 1.0 ~ 1.35
+        const duration = 2500 + Math.random() * 4500; // 2.5~7 seconds
+        const offset = Math.random() * Math.PI * 2;   // Random start phase
 
-        const transform = `translate3d(${x}px, ${y}px, ${z}px)`;
-        tag.style.transform = transform;
+        skillTags.push({
+            element: tag,
+            minScale,
+            maxScale,
+            duration,
+            offset,
+            isPaused: false
+        });
+
+        // Pause on hover
+        tag.addEventListener('mouseenter', () => {
+            const tagData = skillTags.find(t => t.element === tag);
+            if (tagData) tagData.isPaused = true;
+        });
+        tag.addEventListener('mouseleave', () => {
+            const tagData = skillTags.find(t => t.element === tag);
+            if (tagData) tagData.isPaused = false;
+        });
 
         sphere.appendChild(tag);
     });
+
+    // Start animation loop
+    animateSkills();
+}
+
+function animateSkills() {
+    const now = Date.now();
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+    skillTags.forEach(tagData => {
+        if (tagData.isPaused) return;
+
+        const { element, minScale, maxScale, duration, offset } = tagData;
+
+        // Sine wave for smooth back-and-forth motion
+        const progress = (Math.sin((now / duration) * Math.PI * 2 + offset) + 1) / 2;
+
+        // Calculate current scale
+        const scale = minScale + (maxScale - minScale) * progress;
+
+        // Calculate color and opacity based on progress
+        const opacity = 0.4 + progress * 0.6;
+
+        // Color: gray when small, dark/light when large
+        let color;
+        if (isDark) {
+            const gray = Math.round(80 + progress * 160); // 80 ~ 240
+            color = `rgb(${gray}, ${gray}, ${gray})`;
+        } else {
+            const gray = Math.round(170 - progress * 150); // 170 ~ 20
+            color = `rgb(${gray}, ${gray}, ${gray})`;
+        }
+
+        element.style.transform = `scale(${scale})`;
+        element.style.opacity = opacity;
+        element.style.color = color;
+    });
+
+    skillAnimationFrame = requestAnimationFrame(animateSkills);
 }
 
 // Initialize skills sphere when page loads
